@@ -10,7 +10,7 @@ import domain.LabColor
  * interpolation directly in LAB space. Less physically accurate but
  * computationally efficient.
  *
- * Good for quick prototyping or when Mixbox library is not available.
+ * Good for quick prototyping or when the Mixbox library is not available.
  */
 class LabBlendColorMixer : ColorMixer {
 

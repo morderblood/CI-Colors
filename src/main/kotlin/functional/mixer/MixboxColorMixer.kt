@@ -1,5 +1,6 @@
 package functional.mixer
 
+import com.scrtwpns.Mixbox
 import domain.Color
 import domain.LabColor
 

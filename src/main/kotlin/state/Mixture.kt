@@ -1,6 +1,8 @@
 package state
 
 import domain.Color
+import domain.LabColor
+import functional.mixer.ColorMixer
 
 /**
  * State Layer: Represents a candidate solution in the optimization process.
@@ -31,6 +33,19 @@ data class Mixture(
             "Normalized weights size must match original weights size"
         }
         return Mixture(palette, normalizedWeights)
+    }
+
+    /**
+     * Convenience method: Mix colors using this mixture's palette and weights.
+     *
+     * This is syntactic sugar that delegates to the ColorMixer's pure function.
+     * The ColorMixer still remains independent and doesn't depend on Mixture.
+     *
+     * @param mixer The color mixing strategy to use
+     * @return The resulting mixed color
+     */
+    fun mix(mixer: ColorMixer): LabColor {
+        return mixer.mixColors(weights, palette)
     }
 
     override fun equals(other: Any?): Boolean {

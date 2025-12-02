@@ -1,9 +1,11 @@
 package examples
 
+import data.Palette
 import domain.Color
 import domain.LabColor
 import functional.error.DeltaE2000
 import functional.error.DeltaE76
+import functional.error.MixingError
 import functional.mixer.LabBlendColorMixer
 import functional.mixer.MixboxColorMixer
 import functional.normalizer.ProportionsNormalizer
@@ -11,6 +13,10 @@ import functional.normalizer.SoftmaxNormalizer
 import functional.normalizer.Normalizer
 import functional.mixer.ColorMixer
 import goal.Goal
+import optimizer.CMAESOptimizerImpl
+import optimizer.HybridOptimizer
+import optimizer.NelderMeadOptimizer
+import optimizer.Optimizer
 import penalty.Penalty
 import penalty.SparsityPenalty
 import penalty.SimilarityPenalty
@@ -24,35 +30,80 @@ import penalty.L2RegularizationPenalty
  * It shows the clean separation of concerns and modular composition.
  */
 
+fun example_bestOptimization() {
+    val allErrors = mutableListOf<Pair<Double, String>>()
+
+    val palette = Palette.allColors
+
+    val targetColor = LabColor.fromHex("#8B4513") // Saddle Brown
+
+    val normalizer: Normalizer = ProportionsNormalizer()
+
+    val mixer: ColorMixer = MixboxColorMixer()
+
+    val errorMetric: MixingError = DeltaE2000(kL = 1.0, kC = 1.0, kH = 1.0)
+
+    val penalties = listOf<Penalty>(
+        SparsityPenalty(threshold = 0.01, penaltyPerColor = 0.5),
+        L2RegularizationPenalty(lambda = 0.1)
+    )
+    val goal = Goal(
+        palette = palette,
+        target = targetColor,
+        penalties = penalties,
+        mixingError = errorMetric,
+        normalizer = normalizer,
+        colorMixer = mixer
+    )
+
+    /*
+    *
+    * */
+
+    var initialWeights = DoubleArray(palette.size) { 1.0 / palette.size }
+
+    var optimizer : Optimizer = CMAESOptimizerImpl()
+    var result = optimizer.optimize(goal, initialWeights)
+
+    var finalError = goal.evaluate(initialWeights)
+
+    allErrors.add(Pair(finalError, result.algorithmName))
+
+    /*
+    *
+    * */
+
+    initialWeights = DoubleArray(palette.size) { 1.0 / palette.size }
+
+    optimizer = NelderMeadOptimizer()
+    result = optimizer.optimize(goal, initialWeights)
+
+    finalError = goal.evaluate(initialWeights)
+
+    allErrors.add(Pair(finalError, result.algorithmName))
+
+    /*
+    *
+    * */
+
+    initialWeights = DoubleArray(palette.size) { 1.0 / palette.size }
+
+    optimizer = HybridOptimizer()
+    result = optimizer.optimize(goal, initialWeights)
+
+    finalError = goal.evaluate(initialWeights)
+
+    allErrors.add(Pair(finalError, result.algorithmName))
+
+    for (error in allErrors) {
+        println("${error.second}: ${error.first}")
+    }
+}
+
 // Example 1: Basic color mixing optimization
 fun example1_basicOptimization() {
     // Step 1: Define domain - immutable color palette
-    val palette = listOf(
-        Color(
-            id = 1,
-            title = "Vermilion Red",
-            imageName = "vermilion.jpg",
-            hex = "#E34234",
-            lab = LabColor.fromHex("#E34234"),
-            isFavorite = false
-        ),
-        Color(
-            id = 2,
-            title = "Ultramarine Blue",
-            imageName = "ultramarine.jpg",
-            hex = "#4166F5",
-            lab = LabColor.fromHex("#4166F5"),
-            isFavorite = true
-        ),
-        Color(
-            id = 3,
-            title = "Cadmium Yellow",
-            imageName = "cadmium.jpg",
-            hex = "#FFF600",
-            lab = LabColor.fromHex("#FFF600"),
-            isFavorite = false
-        )
-    )
+    val palette = Palette.allColors
 
     // Step 2: Define target color
     val targetColor = LabColor.fromHex("#8B4513") // Saddle Brown
@@ -82,22 +133,17 @@ fun example1_basicOptimization() {
     val initialWeights = DoubleArray(palette.size) { 1.0 / palette.size }
 
     // Step 7: Optimize (assuming you have an optimizer implementation)
-    // val optimizer = CMAESOptimizer(...)
-    // val result = optimizer.optimize(goal, initialWeights)
+    val optimizer = CMAESOptimizerImpl()
+    val result = optimizer.optimize(goal, initialWeights)
 
-    // Step 8: Evaluate final solution
+    // Step 8: Evaluate the final solution
     val finalError = goal.evaluate(initialWeights)
     println("Initial error: $finalError")
 }
 
 // Example 2: Using similarity penalties
 fun example2_similarityPenalty() {
-    val palette = listOf(
-        Color(1, "Vermilion Red", "v.jpg", "#E34234", lab = LabColor.fromHex("#E34234")),
-        Color(2, "Rouge Carmine Red", "r.jpg", "#DC143C", lab = LabColor.fromHex("#DC143C")),
-        Color(3, "Phthalo Blue", "p.jpg", "#000F89", lab = LabColor.fromHex("#000F89")),
-        Color(4, "Prussian Blue", "pr.jpg", "#003153", lab = LabColor.fromHex("#003153"))
-    )
+    val palette = Palette.allColors
 
     // Define similarity pairs by index
     val similarityPairs = listOf(
@@ -128,10 +174,7 @@ fun example2_similarityPenalty() {
 
 // Example 3: Comparing different color mixing strategies
 fun example3_compareMixers() {
-    val palette = listOf(
-        Color(1, "Red", "r.jpg", "#FF0000", lab = LabColor.fromHex("#FF0000")),
-        Color(2, "Blue", "b.jpg", "#0000FF", lab = LabColor.fromHex("#0000FF"))
-    )
+    val palette = Palette.allColors
     val target = LabColor.fromHex("#800080") // Purple
     val weights = doubleArrayOf(0.5, 0.5)
 
@@ -167,9 +210,7 @@ fun example4_normalizers() {
 
 // Example 5: Multiple penalties
 fun example5_multiplePenalties() {
-    val palette = (1..10).map { i ->
-        Color(i, "Color$i", "c$i.jpg", "#000000", lab = LabColor.fromRgb(i * 25, 128, 128))
-    }
+    val palette = Palette.allColors
 
     val penalties = listOf<Penalty>(
         SparsityPenalty(threshold = 0.01, penaltyPerColor = 2.0),    // Prefer fewer colors
