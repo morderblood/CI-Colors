@@ -1,3 +1,0 @@
-interface Optimizer {
-    fun optimize()
-}

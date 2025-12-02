@@ -1,3 +1,11 @@
+package legacy
+
+import domain.Color
+import domain.LabColor
+
+// TODO: This file needs to be refactored to use the new Goal-based architecture
+// See examples/UsageExamples.kt for the new approach
+
 class MixtureOptimizer {
 
 
@@ -335,4 +343,5 @@ class MixtureOptimizer {
         }
     }
 }
+
 

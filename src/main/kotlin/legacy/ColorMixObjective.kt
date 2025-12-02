@@ -1,5 +1,9 @@
-import com.example.colors.data.LabColor
-import com.example.colors.utils.Penalties
+package legacy
+
+// TODO: This file is superseded by goal.Goal
+// This implementation can be deleted after migrating to the new architecture
+
+import domain.LabColor
 import org.apache.commons.math3.analysis.MultivariateFunction
 
 class ColorMixObjective(

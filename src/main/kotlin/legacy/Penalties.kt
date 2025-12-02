@@ -1,4 +1,7 @@
-package com.example.colors.utils
+package legacy
+
+// TODO: This file is superseded by penalty.Penalty interface and its implementations
+// Use penalty.SparsityPenalty and penalty.SimilarityPenalty instead
 
 class Penalties {
     companion object {
