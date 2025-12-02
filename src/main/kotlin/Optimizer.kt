@@ -1,0 +1,3 @@
+interface Optimizer {
+    fun optimize()
+}
