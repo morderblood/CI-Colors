@@ -5,8 +5,7 @@ data class Color(
     var hex: String,
     var rgb: List<Int>? = null,
     var lab: LabColor? = null,
-    var isFavorite: Boolean,
-    var part: Double = 1.0
+    var isFavorite: Boolean
 ) {
     companion object
 }
