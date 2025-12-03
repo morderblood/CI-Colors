@@ -13,15 +13,21 @@ import functional.normalizer.SoftmaxNormalizer
 import functional.normalizer.Normalizer
 import functional.mixer.ColorMixer
 import goal.Goal
+import optimizer.BOBYQAOptimizerImpl
 import optimizer.CMAESOptimizerImpl
 import optimizer.HybridOptimizer
 import optimizer.NelderMeadOptimizer
 import optimizer.Optimizer
+import optimizer.PowellOptimizerImpl
 import penalty.Penalty
 import penalty.SparsityPenalty
 import penalty.SimilarityPenalty
 import penalty.L1RegularizationPenalty
 import penalty.L2RegularizationPenalty
+import penalty.NegativesPenalty
+import utils.WeightPresenter
+import kotlin.compareTo
+import kotlin.text.get
 
 /**
  * USAGE EXAMPLES
@@ -31,21 +37,21 @@ import penalty.L2RegularizationPenalty
  */
 
 fun example_bestOptimization() {
-    val allErrors = mutableListOf<Pair<Double, String>>()
+    val allErrors = mutableListOf<Triple<Double, String, DoubleArray>>()
 
-    val palette = Palette.allColors
+    val palette = Palette.favoriteColors
 
-    val targetColor = LabColor.fromHex("#8B4513") // Saddle Brown
+    val targetColor = LabColor.fromHex("#7a928c")
 
     val normalizer: Normalizer = ProportionsNormalizer()
 
     val mixer: ColorMixer = MixboxColorMixer()
 
+    //val errorMetric: MixingError = DeltaE76()
     val errorMetric: MixingError = DeltaE2000(kL = 1.0, kC = 1.0, kH = 1.0)
 
     val penalties = listOf<Penalty>(
-        SparsityPenalty(threshold = 0.01, penaltyPerColor = 0.5),
-        L2RegularizationPenalty(lambda = 0.1)
+        SparsityPenalty(threshold = 0.01, penaltyPerColor = 1.5)
     )
     val goal = Goal(
         palette = palette,
@@ -56,47 +62,95 @@ fun example_bestOptimization() {
         colorMixer = mixer
     )
 
+    val pureGoal = Goal(
+        palette = palette,
+        target = targetColor,
+        penalties = emptyList(),  // Без штрафов
+        mixingError = errorMetric,
+        normalizer = normalizer,
+        colorMixer = mixer
+    )
+
     /*
     *
     * */
+    val closestIndex = palette.indices
+        .filter { i ->
+            val lab = palette[i].lab
+            // Чёрный: L < 10
+            // Белый: L > 90
+            // Серый: низкие a и b (ахроматичный)
+            val isBlackOrWhite = lab.l < 10.0 || lab.l > 90.0
+            val isGray = kotlin.math.abs(lab.a) < 5.0 && kotlin.math.abs(lab.b) < 5.0
+            !(isBlackOrWhite || isGray)
+        }.minByOrNull { i ->
+        errorMetric.calculate(palette[i].lab, targetColor)
+    } ?: 0
+    var initialGuess = DoubleArray(palette.size) { i ->
+        if (i == closestIndex) 0.9 else 0.1
+    }
 
-    var initialWeights = DoubleArray(palette.size) { 1.0 / palette.size }
+    //initialGuess = DoubleArray(palette.size) { 1.0 / palette.size }
 
     var optimizer : Optimizer = CMAESOptimizerImpl()
-    var result = optimizer.optimize(goal, initialWeights)
+    var result = optimizer.optimize(goal, initialGuess)
 
-    var finalError = goal.evaluate(initialWeights)
+    var finalError = pureGoal.evaluate(result.weights)
 
-    allErrors.add(Pair(finalError, result.algorithmName))
+    val cmaesResult = result.copy(algorithmName = "CMA-ES")
+
+    allErrors.add(Triple(finalError, result.algorithmName, result.weights))
 
     /*
     *
     * */
 
-    initialWeights = DoubleArray(palette.size) { 1.0 / palette.size }
+    //initialGuess = DoubleArray(palette.size) { 0.2 }
+
+    optimizer = BOBYQAOptimizerImpl()
+    result = optimizer.optimize(goal, initialGuess)
+
+    finalError = pureGoal.evaluate(result.weights)
+
+    allErrors.add(Triple(finalError, result.algorithmName, result.weights))
+
+    /*
+    *
+    * */
+
+    //initialGuess = DoubleArray(palette.size) { 1.0 / palette.size }
+
+    optimizer = PowellOptimizerImpl()
+    result = optimizer.optimize(goal, initialGuess)
+
+    finalError = pureGoal.evaluate(result.weights)
+
+    allErrors.add(Triple(finalError, result.algorithmName, result.weights))
+
+    /*
+    *
+    * */
+
+    //initialGuess = DoubleArray(palette.size) { 1.0 / palette.size }
 
     optimizer = NelderMeadOptimizer()
-    result = optimizer.optimize(goal, initialWeights)
+    result = optimizer.optimize(goal, initialGuess)
 
-    finalError = goal.evaluate(initialWeights)
+    finalError = pureGoal.evaluate(result.weights)
 
-    allErrors.add(Pair(finalError, result.algorithmName))
-
-    /*
-    *
-    * */
-
-    initialWeights = DoubleArray(palette.size) { 1.0 / palette.size }
-
-    optimizer = HybridOptimizer()
-    result = optimizer.optimize(goal, initialWeights)
-
-    finalError = goal.evaluate(initialWeights)
-
-    allErrors.add(Pair(finalError, result.algorithmName))
+    allErrors.add(Triple(finalError, result.algorithmName, result.weights))
 
     for (error in allErrors) {
-        println("${error.second}: ${error.first}")
+        val recipe = WeightPresenter.normalizeOptimizationResult(
+            weights = error.third,
+            palette = palette.take(error.third.size),  // Обрезаем палитру для соответствия размерам
+            significanceThreshold = 0.1
+        )
+        println("${error.second}: ${error.first} : ${error.third.joinToString()}")
+        println("  ${recipe.toFormattedString()}")
+        var mix = mixer.mixColors(error.third, palette)
+        println("  Mix: Hex=${mix.toHex()}")
+        println()
     }
 }
 
@@ -137,7 +191,7 @@ fun example1_basicOptimization() {
     val result = optimizer.optimize(goal, initialWeights)
 
     // Step 8: Evaluate the final solution
-    val finalError = goal.evaluate(initialWeights)
+    val finalError = goal.evaluate(result.weights)
     println("Initial error: $finalError")
 }
 

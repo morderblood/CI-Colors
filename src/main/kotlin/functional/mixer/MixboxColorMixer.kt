@@ -30,7 +30,7 @@ class MixboxColorMixer : ColorMixer {
         // Create list of colors with their weights, filtering negligible contributions
         val weightedColors = weights.indices
             .map { i -> palette[i].lab.toInt() to weights[i] }
-            .filter { it.second > 1e-6 }
+            .filter { it.second > 0.1 }
             .sortedByDescending { it.second }
 
         if (weightedColors.isEmpty()) {

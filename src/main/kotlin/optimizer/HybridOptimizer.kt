@@ -27,7 +27,7 @@ class HybridOptimizer(
         stopFitness = cmaesStopFitness
     )
 
-    private val nelderMead = NelderMeadOptimizer(
+    private val nelderMead = BOBYQAOptimizerImpl(
         maxEvaluations = nelderMeadMaxEval
     )
 

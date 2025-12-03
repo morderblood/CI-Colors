@@ -94,7 +94,7 @@ object Palette {
             hex = "#000f89",
             rgb = listOf(0, 15, 137),
             lab = LabColor(l = 16.243, a = 44.354, b = -64.942),
-            isFavorite = true
+            isFavorite = false
         ),
         Color(
             id = 10,
@@ -112,7 +112,7 @@ object Palette {
             hex = "#003153",
             rgb = listOf(0, 49, 83),
             lab = LabColor(l = 19.3131, a = -0.4149, b = -24.8864),
-            isFavorite = true
+            isFavorite = false
         )
     )
 

@@ -22,7 +22,7 @@ import org.apache.commons.math3.random.MersenneTwister
  */
 class CMAESOptimizerImpl(
     private val maxEvaluations: Int = 50000,
-    private val stopFitness: Double = 1e-9,
+    private val stopFitness: Double = 0.1,
     private val populationMultiplier: Int = 5,
     private val sigma: Double = 0.2
 ) : Optimizer {

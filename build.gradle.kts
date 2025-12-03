@@ -11,6 +11,12 @@ repositories {
 
 dependencies {
     testImplementation(kotlin("test"))
+
+    // Color mixing library
+    implementation("com.scrtwpns:mixbox:2.0.0")
+
+    // Apache Commons Math for optimization algorithms
+    implementation("org.apache.commons:commons-math3:3.6.1")
 }
 
 tasks.test {
