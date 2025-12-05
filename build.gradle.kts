@@ -17,10 +17,6 @@ dependencies {
 
     // Apache Commons Math for optimization algorithms
     implementation("org.apache.commons:commons-math3:3.6.1")
-
-    implementation("org.jetbrains.kotlin:kotlin-reflect")
-
-    implementation("org.moeaframework:moeaframework:5.1")
 }
 
 tasks.test {
