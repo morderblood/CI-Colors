@@ -1,4 +1,4 @@
-package examples
+import examples.SamplesGenerator
 
 class Main {
     fun main() {
