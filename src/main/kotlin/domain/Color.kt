@@ -15,5 +15,11 @@ data class Color(
     val lab: LabColor,
     val isFavorite: Boolean = false
 ) {
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other !is Color) return false
+        if (hex != other.hex) return false
+        return true
+    }
     companion object
 }

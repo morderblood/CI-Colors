@@ -21,7 +21,7 @@ import org.apache.commons.math3.random.MersenneTwister
  * Good for initial exploration before local refinement.
  */
 class CMAESOptimizerImpl(
-    private val maxEvaluations: Int = 50000,
+    private val maxEvaluations: Int = 10000,
     private val stopFitness: Double = 0.1,
     private val populationMultiplier: Int = 5,
     private val sigma: Double = 0.2

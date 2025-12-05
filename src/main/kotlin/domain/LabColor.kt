@@ -6,6 +6,8 @@ import kotlin.math.roundToInt
 data class RgbColor(val r: Int, val g: Int, val b: Int)
 data class LabColor(val l: Double, val a: Double, val b: Double) {
 
+    override fun toString(): String = "$l,$a,$b"
+
     /**
      * Converts the Lab color instance to a HEX string.
      */
@@ -137,6 +139,14 @@ data class LabColor(val l: Double, val a: Double, val b: Double) {
     companion object {
         fun fromLab(lab: Map<String, Double>): LabColor {
             return LabColor(lab["l"]!!, lab["a"]!!, lab["b"]!!)
+        }
+
+        fun fromLabString(labString: String) : LabColor {
+            return LabColor(
+                labString.split(",")[0].toDouble(),
+                labString.split(",")[1].toDouble(),
+                labString.split(",")[2].toDouble()
+            )
         }
         /**
          * Creates a LabColor instance from a HEX string (e.g., "#RRGGBB" or "#AARRGGBB").
