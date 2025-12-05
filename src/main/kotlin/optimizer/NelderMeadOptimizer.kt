@@ -21,11 +21,8 @@ import org.apache.commons.math3.optim.nonlinear.scalar.noderiv.SimplexOptimizer
  * Best used after CMA-ES for local refinement.
  */
 class NelderMeadOptimizer(
-    private val maxEvaluations: Int = 10000,
-    private val relativeThreshold: Double = 1e-6,
-    private val absoluteThreshold: Double = 1e-6,
-    private val simplexStepSize: Double = 0.2
-) : Optimizer {
+    optimizationParameters: Map<String, Any> = emptyMap()
+) : Optimizer(optimizationParameters) {
 
     override fun optimize(
         goal: Goal,
@@ -40,10 +37,14 @@ class NelderMeadOptimizer(
         }
 
         // Create simplex with specified step size
-        val simplex = NelderMeadSimplex(DoubleArray(dim) { simplexStepSize })
+        val simplex = NelderMeadSimplex(DoubleArray(dim) { optimizationParameters.getOrDefault("stepSize", 10) as Double })
 
         // Create an optimizer with convergence criteria
-        val optimizer = SimplexOptimizer(relativeThreshold, absoluteThreshold)
+        val optimizer = SimplexOptimizer(
+            optimizationParameters.getOrDefault("relativeThreshold", 1e-6) as Double,
+            optimizationParameters.getOrDefault("absoluteThreshold", 1e-6) as Double)
+
+        val maxEvaluations = optimizationParameters.getOrDefault("maxEvaluations", 100000) as Int
 
         // Run optimization
         val result = optimizer.optimize(

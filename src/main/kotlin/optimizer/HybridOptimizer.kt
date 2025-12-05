@@ -16,9 +16,10 @@ import goal.Goal
  * Recommended for production use.
  */
 class HybridOptimizer(
+    optimizationParameters: Map<String, Any> = emptyMap(),
     private val optimizer1: Optimizer,
-    private val optimizer2: Optimizer,
-) : Optimizer {
+    private val optimizer2: Optimizer
+) : Optimizer(optimizationParameters) {
 
     override fun optimize(
         goal: Goal,

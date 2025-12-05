@@ -10,8 +10,8 @@ import org.apache.commons.math3.optim.nonlinear.scalar.ObjectiveFunction
 import org.apache.commons.math3.optim.nonlinear.scalar.noderiv.BOBYQAOptimizer
 
 class BOBYQAOptimizerImpl(
-    private val maxEvaluations: Int = 10000
-) : Optimizer {
+    optimizationParameters: Map<String, Any> = emptyMap()
+) : Optimizer(optimizationParameters) {
     override fun optimize(
         goal: Goal,
         initialWeights: DoubleArray,
@@ -27,7 +27,9 @@ class BOBYQAOptimizerImpl(
             GoalType.MINIMIZE,
             InitialGuess(initialWeights),
             SimpleBounds(lower, upper),
-            MaxEval(maxEvaluations)
+            MaxEval(
+                optimizationParameters.getOrDefault("maxEvaluations", 10000) as Int
+            )
         )
 
         return OptimizationResult(

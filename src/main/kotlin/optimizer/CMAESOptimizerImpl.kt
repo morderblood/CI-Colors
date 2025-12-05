@@ -21,11 +21,8 @@ import org.apache.commons.math3.random.MersenneTwister
  * Good for initial exploration before local refinement.
  */
 class CMAESOptimizerImpl(
-    private val maxEvaluations: Int = 10000,
-    private val stopFitness: Double = 0.1,
-    private val populationMultiplier: Int = 5,
-    private val sigma: Double = 0.2
-) : Optimizer {
+    optimizationParameters: Map<String, Any> = emptyMap()
+) : Optimizer(optimizationParameters) {
 
     override fun optimize(
         goal: Goal,
@@ -42,6 +39,9 @@ class CMAESOptimizerImpl(
         // Use provided bounds or default to [0.0, 1.0] for each dimension
         val lowerBounds = bounds?.first ?: DoubleArray(dim) { 0.0 }
         val upperBounds = bounds?.second ?: DoubleArray(dim) { 1.0 }
+
+        val maxEvaluations = optimizationParameters.getOrDefault("maxEvaluations", 10000) as Int
+        val stopFitness = optimizationParameters.getOrDefault("stopFitness", 1e-6) as Double
 
         // Create CMA-ES optimizer
         val optimizer = CMAESOptimizer(
@@ -62,8 +62,11 @@ class CMAESOptimizerImpl(
             GoalType.MINIMIZE,
             InitialGuess(initialWeights),
             SimpleBounds(lowerBounds, upperBounds),
-            CMAESOptimizer.Sigma(DoubleArray(dim) { sigma }),
-            CMAESOptimizer.PopulationSize(populationMultiplier * dim)
+            CMAESOptimizer.Sigma(DoubleArray(dim) {
+                optimizationParameters.getOrDefault("sigma", 0.1) as Double
+            }),
+            CMAESOptimizer.PopulationSize(
+                optimizationParameters.getOrDefault("populationMultiplier", 5) as Int * dim)
         )
 
         // Return our standardized result

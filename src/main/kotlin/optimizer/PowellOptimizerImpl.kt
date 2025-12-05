@@ -10,8 +10,8 @@ import org.apache.commons.math3.optim.nonlinear.scalar.ObjectiveFunction
 import org.apache.commons.math3.optim.nonlinear.scalar.noderiv.PowellOptimizer
 
 class PowellOptimizerImpl (
-        private val maxEvaluations: Int = 10000
-    ) : Optimizer {
+    optimizationParameters: Map<String, Any> = emptyMap()
+    ) : Optimizer(optimizationParameters) {
     override fun optimize(
         goal: Goal,
         initialWeights: DoubleArray,
@@ -26,7 +26,7 @@ class PowellOptimizerImpl (
             ObjectiveFunction(MultivariateFunction { goal.evaluate(it) }),
             GoalType.MINIMIZE,
             InitialGuess(initialWeights),
-            MaxEval(maxEvaluations)
+            MaxEval(optimizationParameters.getOrDefault("maxEvaluations", 100000) as Int),
         )
 
         return OptimizationResult(

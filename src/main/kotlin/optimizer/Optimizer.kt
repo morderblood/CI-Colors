@@ -14,7 +14,9 @@ import goal.Goal
  *
  * Принцип: Оптимизаторы работают только с Goal и векторами весов.
  */
-interface Optimizer {
+abstract class Optimizer (
+    val optimizationParameters: Map<String, Any> = emptyMap()
+) {
     /**
      * Optimizes the goal function starting from an initial guess.
      *
@@ -23,7 +25,7 @@ interface Optimizer {
      * @param bounds Optional bounds for each weight (min, max)
      * @return Optimization result containing final weights and objective value
      */
-    fun optimize(
+    abstract fun optimize(
         goal: Goal,
         initialWeights: DoubleArray,
         bounds: Pair<DoubleArray, DoubleArray>? = null

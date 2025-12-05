@@ -11,9 +11,8 @@ import org.moeaframework.core.spi.AlgorithmFactory
  * Пример Optimizer на базе MOEA (NSGA-II) для одной цели.
  */
 abstract class MOEAOptimizerImp(
-    private val maxEvaluations: Int = 10000,
-    private val populationSize: Int = 20
-) : Optimizer {
+    optimizationParameters: Map<String, Any> = emptyMap()
+) : Optimizer() {
 
     abstract val algorithmName: String
     abstract val properties: TypedProperties
@@ -23,6 +22,8 @@ abstract class MOEAOptimizerImp(
         initialWeights: DoubleArray,
         bounds: Pair<DoubleArray, DoubleArray>?
     ): OptimizationResult {
+
+        val maxEvaluations = optimizationParameters["maxEvaluations"] as? Int ?: 10000
 
         val dim = initialWeights.size
         val lowerBounds = bounds?.first ?: DoubleArray(dim) { 0.0 }
