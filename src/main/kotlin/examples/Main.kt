@@ -8,37 +8,42 @@ import functional.error.DeltaE2000
 import functional.mixer.MixboxColorMixer
 import functional.normalizer.ProportionsNormalizer
 import goal.Goal
-import optimizer.CMAESOptimizerImpl
+import optimizer.MOEAFactory
+import optimizer.MOEAOptimizerImp
+import optimizer.NSGAIIOptimizerImpl
 import penalty.Penalty
 import penalty.SparsityPenalty
 
-import kotlin.reflect.full.memberProperties
-
 fun main() {
 
-    val numColors = 4
-    val step = 0.2
+    val numColors = 3
+    val step = 0.25
 
-    val trainingDataPath = "C:\\Users\\safii\\IdeaProjects\\CI-Colors\\src\\main\\kotlin\\datasets\\training_set_$numColors-colors-$step-step.csv"
-    val resultOutputPath = "C:\\Users\\safii\\IdeaProjects\\CI-Colors\\src\\main\\kotlin\\datasets\\results_cma_es_$numColors-colors-$step-step.csv"
+    val trainingDataPath = "C:\\Users\\safii\\IdeaProjects\\CI-Colors\\src\\main\\kotlin\\datasets\\training_set_$numColors-colors-$step-step_for_nsgaII.csv"
 
     GenerateTrainingSet.generateDataset(trainingDataPath, numColors, step)
 
-    generateOptimizations(trainingDataPath, resultOutputPath)
+    //val algos = arrayOf("BOBYQA", "SMSEMOA", "Nelder-Mead", "Powell", "NSGAII", "CMA-ES")
+    val algos = arrayOf("NSGAII")
+    for (algo in algos) {
+        println("Generating results for $algo...")
+        val resultOutputPath = "C:\\Users\\safii\\IdeaProjects\\CI-Colors\\src\\main\\kotlin\\datasets\\results_$algo-$numColors-colors-$step-step.csv"
+        generateOptimizations(trainingDataPath, resultOutputPath, algo)
+    }
 }
 
-fun generateOptimizations(trainingDataPath: String, resultOutputPath: String) {
+fun generateOptimizations(trainingDataPath: String, resultOutputPath: String, optimizerName: String) {
     val normalizer = ProportionsNormalizer()
     val mixer = MixboxColorMixer()
     val mixingError = DeltaE2000()
     val penalties = mutableListOf<Penalty>()
     penalties.add(SparsityPenalty(threshold = 0.01, penaltyPerColor = 1.0))
     val palette = Palette.allColors
-    val optimizer = CMAESOptimizerImpl()
+    val optimizer = MOEAFactory().createOptimizer(optimizerName)
 
     val dataSet = DataSetItemReader.readCSV(trainingDataPath)
 
-    val headers = OptimizationResultData::class.memberProperties.map { it.name }
+    val headers = "targetLab,resultLab,targetWeights,resultWeights,optimizer,numberOfEvaluations,mixingError,penalties,normalizer,initialGuessType".split(",")
     DataSetItemWriter.writeHeader(resultOutputPath, headers)
 
     for (data in dataSet) {

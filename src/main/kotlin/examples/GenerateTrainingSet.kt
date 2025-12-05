@@ -15,6 +15,7 @@ object GenerateTrainingSet {
         val mixer = MixboxColorMixer()
 
         val creator = TrainingSetCreator(mixer)
-        val dataSet = creator.createKColorDataSet(palette, numColors, step, mixer, outputPath)
+        //val dataSet = creator.createKColorDataSet(palette, numColors, step, mixer, outputPath)
+        val dataSet = creator.createRandom3ColorDataSet(palette, mixer, outputPath, 10)
     }
 }
