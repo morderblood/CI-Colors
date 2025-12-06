@@ -1,9 +1,30 @@
 import examples.SamplesGenerator
-import optimizer.CMAESOptimizerImpl
+import hyperparameter.CMAESHyperparameterOptimizer
 
 fun main() {
-    runCMAESExperiment()
+    //runCMAESExperiment()
+    runHyperoptimization()
 }
+
+fun runHyperoptimization(){
+    val trainingDataPath =
+        "C:\\Users\\safii\\IdeaProjects\\CI-Colors\\src\\main\\kotlin\\datasets\\training--3-colors-random-step.csv"
+
+    val tempOutputDir =
+        "C:\\Users\\safii\\IdeaProjects\\CI-Colors\\src\\main\\kotlin\\datasets\\hyperparam_runs"
+
+    val optimizer = CMAESHyperparameterOptimizer(
+        trainingDataPath = trainingDataPath,
+        numSamples = 20,
+        tempOutputDir = tempOutputDir
+    )
+
+    val best = optimizer.optimize()
+
+    println("===== Best Hyperparameters =====")
+    println(best)
+}
+
 
 
 fun runCMAESExperiment() {
