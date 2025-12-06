@@ -142,17 +142,15 @@ class TrainingSetCreator(
         palette: List<Color>,
         mixer: ColorMixer,
         outputPath: String,
+        numColors: Int = 3,
         maxItems: Int = 100
-    ): Long {
+    ) {
 
-        val k = 3   // always pick 3 colors
-        val combos = combinations(palette, k)
+        val combos = combinations(palette, numColors)
 
         val random = Random(System.currentTimeMillis())
 
         val file = File(outputPath)
-        var count = 0L
-
         file.bufferedWriter().use { writer ->
 
             writer.write("target_lab,target_weights\n")
@@ -160,34 +158,26 @@ class TrainingSetCreator(
             loop@ for (combo in combos) {
                 val indices = combo.map { palette.indexOf(it) }
 
-                // Generate many random samples, but stop at 100 total items
-                repeat(10_000) {  // upper bound, loop exits early via break@loop
-                    if (count >= maxItems) break@loop
+                // Generate many random samples but stop at maxItems total items
+                repeat(maxItems) {
+                    val combo = palette.shuffled(random).take(numColors)
 
-                    // ---- RANDOM WEIGHTS THAT SUM TO 1 ----
-                    val raw = DoubleArray(k) { random.nextDouble() }
+                    val indices = combo.map { palette.indexOf(it) }
+
+                    val raw = DoubleArray(numColors) { random.nextDouble() }
                     val sum = raw.sum()
-                    val weights = raw.map { it / sum }  // normalized
+                    val weights = raw.map { it / sum }
 
-                    // place weights into full palette-size array
                     val fullWeights = DoubleArray(palette.size)
-                    for (i in 0 until k) {
+                    for (i in 0 until numColors) {
                         fullWeights[indices[i]] = weights[i]
                     }
 
-                    // mix color
-                    val mixedColor = mixer.mixColors(fullWeights, palette)
-
-                    val td = TrainingData(mixedColor, fullWeights)
-                    writer.write(td.toCSVString())
+                    val mixed = mixer.mixColors(fullWeights, palette)
+                    writer.write(TrainingData(mixed, fullWeights).toCSVString())
                     writer.newLine()
-
-                    count++
                 }
             }
         }
-
-        return count
     }
-
 }

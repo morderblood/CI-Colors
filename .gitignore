@@ -46,4 +46,4 @@ bin/
 
 .idea/
 
-main/kotlin/datasets/
+src/main/kotlin/datasets

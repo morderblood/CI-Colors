@@ -13,21 +13,33 @@ import goal.Goal
 import optimizer.OptimizerFactory
 import penalty.Penalty
 import penalty.SparsityPenalty
+import kotlin.reflect.full.primaryConstructor
 
-/* Generates optimization results for a given dataset. */
+
+/* Generates optimization results for a given dataset.
+*
+* @param outputPath path to the output file
+* @param numColors number of colors to mix in the dataset
+* @param step step-size for color mixing: 0.0 for random weights
+* @param numberOfSamples number of samples to generate
+* */
 class SamplesGenerator {
     fun generateTrainingDataset(
         outputPath: String,
         numColors: Int = 5,
-        step: Double = 0.2
+        step: Double = 0.2,
+        numberOfSamples: Int = 10
     ) {
 
         val palette = Palette.allColors
         val mixer = MixboxColorMixer()
 
         val creator = TrainingSetCreator(mixer)
-        //val dataSet = creator.createKColorDataSet(palette, numColors, step, mixer, outputPath)
-        val dataSet = creator.createRandom3ColorDataSet(palette, mixer, outputPath, 10)
+        if (step > 0.0) {
+            creator.createKColorDataSet(palette, numColors, step, mixer, outputPath)
+        } else {
+            creator.createRandom3ColorDataSet(palette, mixer, outputPath, numColors, numberOfSamples)
+        }
     }
     /**
      * Generate optimization results for a given dataset.
@@ -47,12 +59,11 @@ class SamplesGenerator {
         optimizerName: String = "CMA-ES",
         errorName: String = "DeltaE2000",
         includeSparsityPenalty: Boolean = true,
-        useOptimizerFactoryDefaults: Boolean = true,
         initialGuessType: String = "Uniform",
-        optimizationParameters: Map<String, Any> = emptyMap(),
+        optimizationParameters: Map<String, Any>? = emptyMap(),
         numberOfSamples: Int = 100
     ) {
-        val optimizer = OptimizerFactory.createOptimizer(optimizerName, optimizationParameters)
+        val optimizer = OptimizerFactory.createOptimizer(optimizerName, optimizationParameters!!)
 
         val mixingError = MixingErrorFactory.createMixingError(errorName)
 
@@ -66,7 +77,17 @@ class SamplesGenerator {
 
         val dataSet = DataSetItemReader.readCSV(trainingDataPath)
 
-        val headers = "targetLab,resultLab,targetWeights,resultWeights,optimizer,numberOfEvaluations,mixingError,penalties,normalizer,initialGuessType".split(",")
+        val allParameterKeys = optimizationParameters.keys
+
+        var headers = OptimizationResultData::class.primaryConstructor!!
+            .parameters
+            .map { it.name!! }
+            .filter { it != "optimizationParameters" }
+
+        val parameterHeaders = allParameterKeys.sorted()
+
+        headers += parameterHeaders
+
         DataSetItemWriter.writeHeader(resultOutputPath, headers)
 
         var iteration = 0
@@ -87,22 +108,30 @@ class SamplesGenerator {
                 palette = palette,
                 targetLab = data.targetLab
             ).generateInitialGuess(dimensions = palette.size)
+            val initialLab = colorMixer.mixColors(initialGuess, palette)
 
+            val startTime = System.nanoTime()
             val result = optimizer.optimize(goal, initialGuess)
+            val runtimeMs = (System.nanoTime() - startTime) / 1_000_000
 
             val resultLab = colorMixer.mixColors(result.weights, palette)
 
             val resultData = OptimizationResultData(
                 targetLab = data.targetLab,
                 resultLab = resultLab,
+                initialLab = initialLab,
                 targetWeights = data.weights,
                 resultWeights = result.weights,
-                optimizer = optimizer,
+                initialWeights = initialGuess,
+                optimizerName = optimizerName,
                 numberOfEvaluations = result.evaluations,
-                mixingError = mixingError,
+                mixingErrorName = errorName,
                 penalties = penalties,
                 normalizer = normalizer,
                 initialGuessType = initialGuessType,
+                runtimeMs = runtimeMs,
+                converged = result.converged,
+                optimizationParameters = optimizationParameters
             )
 
             DataSetItemWriter.appendLine(resultData, resultOutputPath)

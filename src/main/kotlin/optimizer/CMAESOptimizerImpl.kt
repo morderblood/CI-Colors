@@ -41,14 +41,14 @@ class CMAESOptimizerImpl(
         val upperBounds = bounds?.second ?: DoubleArray(dim) { 1.0 }
 
         val maxEvaluations = optimizationParameters.getOrDefault("maxEvaluations", 10000) as Int
-        val stopFitness = optimizationParameters.getOrDefault("stopFitness", 1e-6) as Double
+        val stopFitness = optimizationParameters.getOrDefault("stopFitness", 1e-3) as Double
 
         // Create CMA-ES optimizer
         val optimizer = CMAESOptimizer(
             maxEvaluations,
             stopFitness,
             true,  // isActiveCMA
-            0,     // diagonalOnly
+            optimizationParameters.getOrDefault("diagonalOnly", 10) as Int,     // diagonalOnly
             0,     // checkFeasibleCount
             MersenneTwister(),
             false, // generateStatistics
@@ -63,7 +63,7 @@ class CMAESOptimizerImpl(
             InitialGuess(initialWeights),
             SimpleBounds(lowerBounds, upperBounds),
             CMAESOptimizer.Sigma(DoubleArray(dim) {
-                optimizationParameters.getOrDefault("sigma", 0.1) as Double
+                optimizationParameters.getOrDefault("sigma", 0.3) as Double
             }),
             CMAESOptimizer.PopulationSize(
                 optimizationParameters.getOrDefault("populationMultiplier", 5) as Int * dim)

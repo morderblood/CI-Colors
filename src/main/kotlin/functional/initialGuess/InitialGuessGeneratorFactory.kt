@@ -13,7 +13,7 @@ object InitialGuessGeneratorFactory {
         return when (generatorName) {
             "Uniform" -> UniformInitialGuessGenerator()
             "Random" -> RandomInitialGuessGenerator()
-            "Similarity" -> SimilarityGuessGenerator(palette, targetLab)
+            "Similar" -> SimilarityGuessGenerator(palette, targetLab)
             else -> throw IllegalArgumentException("Unknown initial guess generator: $generatorName")
         }
     }
