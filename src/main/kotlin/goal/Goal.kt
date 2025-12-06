@@ -35,7 +35,7 @@ class Goal(
     private val mixingError: MixingError,
     private val normalizer: Normalizer,
     private val colorMixer: ColorMixer
-) {
+)  {
     /**
      * Evaluates a candidate solution (weight vector).
      *

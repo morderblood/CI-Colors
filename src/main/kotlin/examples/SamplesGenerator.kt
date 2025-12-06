@@ -84,7 +84,7 @@ class SamplesGenerator {
             .map { it.name!! }
             .filter { it != "optimizationParameters" }
 
-        val parameterHeaders = allParameterKeys.sorted()
+        val parameterHeaders = allParameterKeys
 
         headers += parameterHeaders
 

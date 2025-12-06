@@ -48,8 +48,8 @@ class CMAESOptimizerImpl(
             maxEvaluations,
             stopFitness,
             true,  // isActiveCMA
-            optimizationParameters.getOrDefault("diagonalOnly", 10) as Int,     // diagonalOnly
-            0,     // checkFeasibleCount
+            optimizationParameters.getOrDefault("diagonalOnly", 10) as Int,
+            optimizationParameters.getOrDefault("checkFeasableCount", 10) as Int,
             MersenneTwister(),
             false, // generateStatistics
             null   // convergenceChecker

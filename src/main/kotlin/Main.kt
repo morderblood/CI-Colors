@@ -1,73 +1,129 @@
 import examples.SamplesGenerator
+import optimizer.CMAESOptimizerImpl
 
 fun main() {
+    runCMAESExperiment()
+}
 
-    /**
-     * Generating training samples.
-     */
+
+fun runCMAESExperiment() {
+
+    // ============================================================
+    // 1. Generate Training Dataset
+    // ============================================================
+
     val numColors = 3
     val step = 0.0
     val numberOfSamples = 10
 
-    val trainingDataPath = generateOutputPath(
-        numColors=numColors,
-        step=step,
-        dataType="training")
-
     val samplesGenerator = SamplesGenerator()
+
+    val trainingDataPath = generateOutputPath(
+        algo = "",
+        numColors = numColors,
+        step = step,
+        dataType = "training"
+    )
+
     samplesGenerator.generateTrainingDataset(
-        outputPath=trainingDataPath,
-        numColors=numColors,
-        step=step,
-        numberOfSamples=numberOfSamples)
+        outputPath = trainingDataPath,
+        numColors = numColors,
+        step = step,
+        numberOfSamples = numberOfSamples
+    )
 
-    /**
-     * Setting optimization parameters.
-     */
-    val optimizerParameterMap = mutableMapOf<String, Map<String, Any>>()
 
-    /**
-     * BOBYQA
-     */
-    var optimizerName = "BOBYQA"
-    var optimizationParameters = mutableMapOf<String, Any>()
-    optimizationParameters["maxEvaluations"] = 1000
-    optimizationParameters["numberOfInterpolationPoints"] = 77
-    optimizerParameterMap[optimizerName] = optimizationParameters
+    // ============================================================
+    // 2. Define CMA-ES Parameter Sweep
+    // ============================================================
 
-    /**
-     * CMAES
-     */
-    optimizerName = "CMA-ES"
-    optimizationParameters = mutableMapOf<String, Any>()
-    optimizationParameters["maxEvaluations"] = 10000
-    optimizationParameters["populationMultiplier"] = 10
-    optimizationParameters["stopFitness"] = 1e-3
-    optimizationParameters["sigma"] = 0.3
-    optimizationParameters["diagonalOnly"] = 10
-    optimizerParameterMap[optimizerName] = optimizationParameters
+    val populationMultipliers = listOf(5, 10, 20)
+    val sigmas = listOf(0.2, 0.3, 0.5)
+    val diagonalOnlyValues = listOf(10, 20)
+    val feasibleCheckCounts = listOf(5, 10)
+    val stopFitnessValues = listOf(1e-3, 1e-2)
 
-    /**
-     * Generating optimization results for each optimizer.
-     */
-    for ((algoName, parameters) in optimizerParameterMap) {
-        println("Generating results for $algoName optimizer...")
-        val resultsDataPath = generateOutputPath(algoName, numColors, step, "results")
+
+    // Generate all parameter tuples
+    val allParameterTuples = cartesianProduct(
+        listOf(
+            populationMultipliers,
+            sigmas,
+            diagonalOnlyValues,
+            feasibleCheckCounts,
+            stopFitnessValues
+        )
+    )
+
+    // Convert tuples → maps
+    val parameterSets = allParameterTuples.map { tuple ->
+        mapOf(
+            "populationMultiplier" to tuple[0],
+            "sigma" to tuple[1],
+            "diagonalOnly" to tuple[2],
+            "checkFeasibleCount" to tuple[3],
+            "stopFitness" to tuple[4]
+        )
+    }
+
+
+    // ============================================================
+    // 3. Run CMA-ES for Every Parameter Combination
+    // ============================================================
+
+    parameterSets.forEachIndexed { index, params ->
+
+        val fileSuffix = paramFileSuffix(params)
+
+        val resultsDataPath = generateOutputPath(
+            algo = "CMA-ES-$fileSuffix",
+            numColors = numColors,
+            step = step,
+            dataType = "results"
+        )
+
+        println("\n=== Running CMA-ES with parameter set #$index ===")
+        println("Params: $params")
+        println("Output file: $resultsDataPath")
 
         samplesGenerator.generateOptimizationSamples(
             trainingDataPath = trainingDataPath,
             resultOutputPath = resultsDataPath,
-            optimizerName = algoName,
+            optimizerName = "CMA-ES",
             errorName = "DeltaE2000",
             includeSparsityPenalty = true,
             initialGuessType = "Uniform",
-            optimizationParameters = parameters,
+            optimizationParameters = params,
             numberOfSamples = numberOfSamples
         )
     }
+
+    println("\n=== Experiment complete! ===")
 }
 
-fun generateOutputPath(algo: String? = "", numColors: Int, step: Double, dataType: String): String {
+
+// ============================================================
+// Helpers
+// ============================================================
+
+fun generateOutputPath(
+    algo: String? = "",
+    numColors: Int,
+    step: Double,
+    dataType: String
+): String {
     val stepStr = if (step == 0.0) "random" else step.toString()
     return "C:\\Users\\safii\\IdeaProjects\\CI-Colors\\src\\main\\kotlin\\datasets\\$dataType-$algo-$numColors-colors-$stepStr-step.csv"
 }
+
+fun <T> cartesianProduct(lists: List<List<T>>): List<List<T>> =
+    lists.fold(listOf(listOf<T>())) { acc, list ->
+        acc.flatMap { accItem -> list.map { accItem + it } }
+    }
+
+
+// Create a descriptive filename suffix based on parameters
+fun paramFileSuffix(params: Map<String, Any>): String =
+    params.entries.joinToString("-") { (k, v) ->
+        "$k-$v"
+    }.replace(".", "_")   // avoid decimals in filenames
