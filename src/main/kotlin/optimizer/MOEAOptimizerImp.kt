@@ -23,7 +23,7 @@ abstract class MOEAOptimizerImp(
         bounds: Pair<DoubleArray, DoubleArray>?
     ): OptimizationResult {
 
-        val maxEvaluations = optimizationParameters["maxEvaluations"] as? Int ?: 10000
+        val maxEvaluations = optimizationParameters["maxEvaluations"] as? Int ?: 50000
 
         val dim = initialWeights.size
         val lowerBounds = bounds?.first ?: DoubleArray(dim) { 0.0 }

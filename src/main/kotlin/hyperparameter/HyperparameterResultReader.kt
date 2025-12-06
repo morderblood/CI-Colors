@@ -24,6 +24,7 @@ object HyperparameterResultReader {
         // Column positions
         val targetLabIndex = header.indexOf("targetLab")
         val resultLabIndex = header.indexOf("resultLab")
+        val optimizerNameIndex = header.indexOf("optimizerName")
 
         if (targetLabIndex == -1 || resultLabIndex == -1)
             error("CSV missing LAB columns: $filePath")
@@ -40,32 +41,54 @@ object HyperparameterResultReader {
 
         val first = rows.first().split(",")
 
-        fun getDouble(name: String): Double {
-            val idx = header.indexOf(name)
-            return if (idx >= 0) first[idx].toDouble() else Double.NaN
+        // Extract optimizer name
+        val optimizerName = if (optimizerNameIndex >= 0) {
+            first[optimizerNameIndex]
+        } else {
+            "Unknown"
         }
 
-        fun getInt(name: String): Int {
-            val idx = header.indexOf(name)
-            return if (idx >= 0) first[idx].toInt() else -1
+        // Extract all parameters dynamically
+        // Look for known parameter columns in header
+        val parameterColumns = listOf(
+            "populationMultiplier",
+            "sigma",
+            "diagonalOnly",
+            "checkFeasibleCount",
+            "stopFitness",
+            "populationSize",
+            "maxGenerations",
+            "crossoverProbability",
+            "mutationProbability"
+        )
+
+        val parameters = mutableMapOf<String, Any>()
+        for (paramName in parameterColumns) {
+            val idx = header.indexOf(paramName)
+            if (idx >= 0 && idx < first.size) {
+                val value = first[idx]
+                // Try to parse as Int, Double, or keep as String
+                parameters[paramName] = when {
+                    value.toIntOrNull() != null -> value.toInt()
+                    value.toDoubleOrNull() != null -> value.toDouble()
+                    else -> value
+                }
+            }
         }
 
         return HyperparameterSample(
-            populationMultiplier = getInt("populationMultiplier"),
-            sigma = getDouble("sigma"),
-            diagonalOnly = getInt("diagonalOnly"),
-            checkFeasibleCount = getInt("checkFeasibleCount"),
-            stopFitness = getDouble("stopFitness"),
+            optimizerName = optimizerName,
+            parameters = parameters,
             meanError = meanError
         )
     }
 
     /**
-     * Load all CMA-ES result samples from a folder.
+     * Load all result samples from a folder.
      */
     fun loadAllSamples(folder: String): List<HyperparameterSample> {
         return File(folder)
-            .listFiles { f -> f.name.contains("CMA-ES") }
+            .listFiles { f -> f.isFile && f.extension == "csv" }
             ?.map { loadSampleFromFile(it.absolutePath) }
             ?: emptyList()
     }

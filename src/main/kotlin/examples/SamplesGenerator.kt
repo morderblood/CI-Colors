@@ -71,7 +71,7 @@ class SamplesGenerator {
         val colorMixer = MixboxColorMixer()
 
         val penalties = mutableListOf<Penalty>()
-        if (includeSparsityPenalty) penalties.add(SparsityPenalty(threshold = 0.01, penaltyPerColor = 1.0))
+        if (includeSparsityPenalty) penalties.add(SparsityPenalty(threshold = 0.01, penaltyPerColor = 20.0))
 
         val palette = Palette.allColors
 
