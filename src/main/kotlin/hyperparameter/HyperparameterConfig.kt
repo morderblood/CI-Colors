@@ -18,4 +18,3 @@ data class HyperparameterConfig(
     val upperBound: Double,
     val transform: (Double) -> Any = { it }
 )
-

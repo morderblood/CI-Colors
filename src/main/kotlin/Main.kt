@@ -6,16 +6,17 @@ import hyperparameter.HyperparameterOptimizer
 import kotlin.math.pow
 
 fun main() {
-    // Run CMA-ES with specific parameters
+    //Run CMA-ES with specific parameters
     runCMAESWithParameters(
         parameters = mapOf(
             "populationMultiplier" to 12,
-            "sigma" to 0.067537,
-            "diagonalOnly" to 12,
-            "checkFeasibleCount" to 11,
-            "stopFitness" to 0.001
+            "sigma" to 0.19961484447526043,
+            "diagonalOnly" to 13,
+            "checkFeasibleCount" to 13,
+            "stopFitness" to 5.42034391407451E-4
         )
     )
+    //runCMAEHyperoptimization()
 }
 
 /**
@@ -28,7 +29,7 @@ fun main() {
  */
 fun runCMAESWithParameters(
     trainingDataPath: String = "C:\\Users\\safii\\IdeaProjects\\CI-Colors\\src\\main\\kotlin\\datasets\\training--3-colors-random-step.csv",
-    outputPath: String = "C:\\Users\\safii\\IdeaProjects\\CI-Colors\\src\\main\\kotlin\\datasets\\results\\cmaes-results.csv",
+    outputPath: String = "C:\\Users\\safii\\IdeaProjects\\CI-Colors\\src\\main\\kotlin\\datasets\\results\\cmaes-results-similar.csv",
     numSamples: Int = 50,
     parameters: Map<String, Any> = mapOf(
         "populationMultiplier" to 10,

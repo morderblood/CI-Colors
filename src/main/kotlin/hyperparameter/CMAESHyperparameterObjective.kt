@@ -36,7 +36,7 @@ class HyperparameterObjective(
             optimizerName = innerOptimizerName,
             errorName = "DeltaE2000",
             includeSparsityPenalty = true,
-            initialGuessType = "Uniform",
+            initialGuessType = "Similar",
             optimizationParameters = paramMap,
             numberOfSamples = numSamples
         )
