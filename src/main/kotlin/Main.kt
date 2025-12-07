@@ -7,16 +7,39 @@ import kotlin.math.pow
 
 fun main() {
     //Run CMA-ES with specific parameters
-    runCMAESWithParameters(
-        parameters = mapOf(
-            "populationMultiplier" to 12,
-            "sigma" to 0.19961484447526043,
-            "diagonalOnly" to 13,
-            "checkFeasibleCount" to 13,
-            "stopFitness" to 5.42034391407451E-4
-        )
-    )
+//    runCMAESWithParameters(
+//        parameters = mapOf(
+//            "populationMultiplier" to 12,
+//            "sigma" to 0.19961484447526043,
+//            "diagonalOnly" to 13,
+//            "checkFeasibleCount" to 13,
+//            "stopFitness" to 5.42034391407451E-4
+//        )
+//    )
+    //runNSGAIIHyperoptimizationFast()
+    //runSMSEMOAHyperoptimization()
+    //runPowellHyperoptimizationFast()
+    //runBOBYQAHyperoptimization()
+    //runNelderMeadHyperoptimization()
     //runCMAEHyperoptimization()
+    //runSPEA2HyperoptimizationFast()
+
+
+    val trainingPath = "C:\\Users\\safii\\IdeaProjects\\CI-Colors\\src\\main\\kotlin\\datasets\\training--best-parameters.csv"
+    val resultsPath = "C:\\Users\\safii\\IdeaProjects\\CI-Colors\\src\\main\\kotlin\\datasets\\best_results"
+    val numSamples = 50
+
+    SamplesGenerator().generateTrainingDataset(
+        trainingPath, 3, 0.0, numSamples
+    )
+    runAllAlgorithms(
+        trainingPath,
+        resultsPath,
+        numSamples,
+        "DeltaE2000",
+        true,
+        "Similar"
+    )
 }
 
 /**
@@ -101,26 +124,19 @@ fun runAllAlgorithms(
     // List of all algorithms with their default parameters
     val algorithms = listOf(
         "CMA-ES" to mapOf(
-            "populationMultiplier" to 10,
-            "sigma" to 0.3,
-            "diagonalOnly" to 10,
-            "checkFeasibleCount" to 10,
-            "stopFitness" to 0.001
+            "populationMultiplier" to 12,
+            "sigma" to 0.204046,
+            "diagonalOnly" to 12,
+            "checkFeasibleCount" to 9,
+            "stopFitness" to 0.002099
         ),
-//        "NSGAII" to mapOf(
-//            "populationSize" to 175,
-//            "sbxRate" to 1.0,
-//            "sbxDistributionIndex" to 15.0,
-//            "pmRate" to 0.1,
-//            "pmDistributionIndex" to 20.0
-//        ),
-//        "SPEA2" to mapOf(
-//            "populationSize" to 100,
-//            "archiveSize" to 100,
-//            "sbxRate" to 1.0,
-//            "sbxDistributionIndex" to 15.0,
-//            "pmDistributionIndex" to 20.0
-//        ),
+        "NSGAII" to mapOf(
+            "populationSize" to 197,
+            "sbxRate" to 1.0,
+            "sbxDistributionIndex" to 17.973916,
+            "pmRate" to 0.158414,
+            "pmDistributionIndex" to 22.238995
+        ),
         "SMSEMOA" to mapOf(
             "populationSize" to 100,
             "sbxRate" to 1.0,
@@ -128,8 +144,8 @@ fun runAllAlgorithms(
             "pmDistributionIndex" to 20.0
         ),
         "BOBYQA" to mapOf(
-            "maxEvaluations" to 10000,
-            "numberOfInterpolationPoints" to 20
+            "maxEvaluations" to 5000,
+            "numberOfInterpolationPoints" to 36
         ),
         "Powell" to mapOf(
             "maxEvaluations" to 50000
@@ -139,6 +155,13 @@ fun runAllAlgorithms(
             "relativeThreshold" to 0.0001,
             "absoluteThreshold" to 0.00001,
             "stepSize" to 0.01
+        ),
+        "SPEA2" to mapOf(
+            "populationSize" to 100,
+            "archiveSize" to 100,
+            "sbxRate" to 1.0,
+            "sbxDistributionIndex" to 15.0,
+            "pmDistributionIndex" to 20.0
         )
     )
 
@@ -248,7 +271,7 @@ fun runNelderMeadHyperoptimization(){
         "C:\\Users\\safii\\IdeaProjects\\CI-Colors\\src\\main\\kotlin\\datasets\\training--3-colors-random-step.csv"
 
     val tempOutputDir =
-        "C:\\Users\\safii\\IdeaProjects\\CI-Colors\\src\\main\\kotlin\\datasets\\hyperparam_runs"
+        "C:\\Users\\safii\\IdeaProjects\\CI-Colors\\src\\main\\kotlin\\datasets\\hyperparam_runs\\nelder_mead"
 
     val parameters = listOf(
         HyperparameterConfig(
@@ -290,11 +313,11 @@ fun runNelderMeadHyperoptimization(){
         tempOutputDir = tempOutputDir,
         parameters = parameters,
         optimizerName = "Nelder-Mead",
-        numSamples = 20,
-        useNelderMead = true,        // Use Nelder-Mead as outer optimizer for speed
-        maxEvaluations = 500,        // Fewer evaluations than CMA-ES
-        relativeThreshold = 1e-4,    // Slightly relaxed for speed
-        absoluteThreshold = 1e-4
+        numSamples = 50,
+        useNelderMead = true,
+        maxEvaluations = 1000,
+        relativeThreshold = 1e-6,
+        absoluteThreshold = 1e-6
     )
 }
 
@@ -303,7 +326,7 @@ fun runCMAEHyperoptimization(){
         "C:\\Users\\safii\\IdeaProjects\\CI-Colors\\src\\main\\kotlin\\datasets\\training--3-colors-random-step.csv"
 
     val tempOutputDir =
-        "C:\\Users\\safii\\IdeaProjects\\CI-Colors\\src\\main\\kotlin\\datasets\\hyperparam_runs"
+        "C:\\Users\\safii\\IdeaProjects\\CI-Colors\\src\\main\\kotlin\\datasets\\hyperparam_runs\\cmaes"
 
     // Define CMA-ES hyperparameters to optimize
     val cmaesHyperparams = listOf(
@@ -354,7 +377,7 @@ fun runCMAEHyperoptimization(){
         tempOutputDir = tempOutputDir,
         parameters = cmaesHyperparams,
         optimizerName = "CMA-ES",
-        numSamples = 20
+        numSamples = 50
     )
 }
 
@@ -364,7 +387,7 @@ fun runNSGAIIHyperoptimization() {
         "C:\\Users\\safii\\IdeaProjects\\CI-Colors\\src\\main\\kotlin\\datasets\\training--3-colors-random-step.csv"
 
     val tempOutputDir =
-        "C:\\Users\\safii\\IdeaProjects\\CI-Colors\\src\\main\\kotlin\\datasets\\hyperparam_runs"
+        "C:\\Users\\safii\\IdeaProjects\\CI-Colors\\src\\main\\kotlin\\datasets\\hyperparam_runs\\nsgaii"
 
     val nsgaiiHyperparams = listOf(
         HyperparameterConfig(
@@ -414,7 +437,7 @@ fun runNSGAIIHyperoptimization() {
         tempOutputDir = tempOutputDir,
         parameters = nsgaiiHyperparams,
         optimizerName = "NSGAII",
-        numSamples = 20
+        numSamples = 50
     )
 }
 
@@ -424,25 +447,27 @@ fun runBOBYQAHyperoptimization() {
         "C:\\Users\\safii\\IdeaProjects\\CI-Colors\\src\\main\\kotlin\\datasets\\training--3-colors-random-step.csv"
 
     val tempOutputDir =
-        "C:\\Users\\safii\\IdeaProjects\\CI-Colors\\src\\main\\kotlin\\datasets\\hyperparam_runs"
+        "C:\\Users\\safii\\IdeaProjects\\CI-Colors\\src\\main\\kotlin\\datasets\\hyperparam_runs\\BOBYQA"
 
     val bobyqaHyperparams = listOf(
         HyperparameterConfig(
             name = "maxEvaluations",
-            initialValue = 10000.0,
-            sigma = 5000.0,
-            lowerBound = 1000.0,
-            upperBound = 50000.0,
+            initialValue = 15000.0,
+            sigma = 4000.0,
+            lowerBound = 2000.0,
+            upperBound = 40000.0,
             transform = { it.toInt() }
         ),
+
         HyperparameterConfig(
             name = "numberOfInterpolationPoints",
-            initialValue = 20.0,  // Typically 2*n+1 where n is dimension
-            sigma = 10.0,
-            lowerBound = 13.0,    // n+2 minimum (for 11 colors)
-            upperBound = 50.0,    // Upper practical limit
+            initialValue = 17.0,
+            sigma = 3.0,
+            lowerBound = 13.0,
+            upperBound = 25.0,
             transform = { it.toInt() }
         )
+
     )
 
     rumOptimization(
@@ -450,7 +475,7 @@ fun runBOBYQAHyperoptimization() {
         tempOutputDir = tempOutputDir,
         parameters = bobyqaHyperparams,
         optimizerName = "BOBYQA",
-        numSamples = 20
+        numSamples = 50
     )
 }
 
@@ -460,7 +485,7 @@ fun runPowellHyperoptimization() {
         "C:\\Users\\safii\\IdeaProjects\\CI-Colors\\src\\main\\kotlin\\datasets\\training--3-colors-random-step.csv"
 
     val tempOutputDir =
-        "C:\\Users\\safii\\IdeaProjects\\CI-Colors\\src\\main\\kotlin\\datasets\\hyperparam_runs"
+        "C:\\Users\\safii\\IdeaProjects\\CI-Colors\\src\\main\\kotlin\\datasets\\hyperparam_runs\\Powell"
 
     val powellHyperparams = listOf(
         HyperparameterConfig(
@@ -480,7 +505,7 @@ fun runPowellHyperoptimization() {
         tempOutputDir = tempOutputDir,
         parameters = powellHyperparams,
         optimizerName = "Powell",
-        numSamples = 20
+        numSamples = 50
     )
 }
 
@@ -490,7 +515,7 @@ fun runSMSEMOAHyperoptimization() {
         "C:\\Users\\safii\\IdeaProjects\\CI-Colors\\src\\main\\kotlin\\datasets\\training--3-colors-random-step.csv"
 
     val tempOutputDir =
-        "C:\\Users\\safii\\IdeaProjects\\CI-Colors\\src\\main\\kotlin\\datasets\\hyperparam_runs"
+        "C:\\Users\\safii\\IdeaProjects\\CI-Colors\\src\\main\\kotlin\\datasets\\hyperparam_runs\\SMSEMOA"
 
     val smsemoaHyperparams = listOf(
         HyperparameterConfig(
@@ -532,7 +557,7 @@ fun runSMSEMOAHyperoptimization() {
         tempOutputDir = tempOutputDir,
         parameters = smsemoaHyperparams,
         optimizerName = "SMSEMOA",
-        numSamples = 20
+        numSamples = 50
     )
 }
 
@@ -542,7 +567,7 @@ fun runSPEA2Hyperoptimization() {
         "C:\\Users\\safii\\IdeaProjects\\CI-Colors\\src\\main\\kotlin\\datasets\\training--3-colors-random-step.csv"
 
     val tempOutputDir =
-        "C:\\Users\\safii\\IdeaProjects\\CI-Colors\\src\\main\\kotlin\\datasets\\hyperparam_runs"
+        "C:\\Users\\safii\\IdeaProjects\\CI-Colors\\src\\main\\kotlin\\datasets\\hyperparam_runs\\SPEA2"
 
     val spea2Hyperparams = listOf(
         HyperparameterConfig(
@@ -592,7 +617,7 @@ fun runSPEA2Hyperoptimization() {
         tempOutputDir = tempOutputDir,
         parameters = spea2Hyperparams,
         optimizerName = "SPEA2",
-        numSamples = 20
+        numSamples = 50
     )
 }
 
@@ -734,7 +759,7 @@ fun runCMAESHyperoptimizationFast() {
         "C:\\Users\\safii\\IdeaProjects\\CI-Colors\\src\\main\\kotlin\\datasets\\training--3-colors-random-step.csv"
 
     val tempOutputDir =
-        "C:\\Users\\safii\\IdeaProjects\\CI-Colors\\src\\main\\kotlin\\datasets\\hyperparam_runs"
+        "C:\\Users\\safii\\IdeaProjects\\CI-Colors\\src\\main\\kotlin\\datasets\\hyperparam_runs\\cmaes"
 
     val cmaesHyperparams = listOf(
         HyperparameterConfig(
@@ -784,9 +809,9 @@ fun runCMAESHyperoptimizationFast() {
         tempOutputDir = tempOutputDir,
         parameters = cmaesHyperparams,
         optimizerName = "CMA-ES",
-        numSamples = 20,
+        numSamples = 50,
         useNelderMead = true,
-        maxEvaluations = 2000,
+        maxEvaluations = 10,
         relativeThreshold = 1e-4,
         absoluteThreshold = 1e-4
     )
@@ -800,7 +825,7 @@ fun runBOBYQAHyperoptimizationFast() {
         "C:\\Users\\safii\\IdeaProjects\\CI-Colors\\src\\main\\kotlin\\datasets\\training--3-colors-random-step.csv"
 
     val tempOutputDir =
-        "C:\\Users\\safii\\IdeaProjects\\CI-Colors\\src\\main\\kotlin\\datasets\\hyperparam_runs"
+        "C:\\Users\\safii\\IdeaProjects\\CI-Colors\\src\\main\\kotlin\\datasets\\hyperparam_runs\\BOBYQA"
 
     val bobyqaHyperparams = listOf(
         HyperparameterConfig(
@@ -826,9 +851,9 @@ fun runBOBYQAHyperoptimizationFast() {
         tempOutputDir = tempOutputDir,
         parameters = bobyqaHyperparams,
         optimizerName = "BOBYQA",
-        numSamples = 20,
-        useNelderMead = true,
-        maxEvaluations = 300,
+        numSamples = 50,
+        useNelderMead = false,
+        maxEvaluations = 10,
         relativeThreshold = 1e-4,
         absoluteThreshold = 1e-4
     )
@@ -842,7 +867,7 @@ fun runPowellHyperoptimizationFast() {
         "C:\\Users\\safii\\IdeaProjects\\CI-Colors\\src\\main\\kotlin\\datasets\\training--3-colors-random-step.csv"
 
     val tempOutputDir =
-        "C:\\Users\\safii\\IdeaProjects\\CI-Colors\\src\\main\\kotlin\\datasets\\hyperparam_runs"
+        "C:\\Users\\safii\\IdeaProjects\\CI-Colors\\src\\main\\kotlin\\datasets\\hyperparam_runs\\Powell"
 
     val powellHyperparams = listOf(
         HyperparameterConfig(
@@ -860,7 +885,7 @@ fun runPowellHyperoptimizationFast() {
         tempOutputDir = tempOutputDir,
         parameters = powellHyperparams,
         optimizerName = "Powell",
-        numSamples = 20,
+        numSamples = 50,
         useNelderMead = true,
         maxEvaluations = 200,
         relativeThreshold = 1e-4,
@@ -876,7 +901,7 @@ fun runNSGAIIHyperoptimizationFast() {
         "C:\\Users\\safii\\IdeaProjects\\CI-Colors\\src\\main\\kotlin\\datasets\\training--3-colors-random-step.csv"
 
     val tempOutputDir =
-        "C:\\Users\\safii\\IdeaProjects\\CI-Colors\\src\\main\\kotlin\\datasets\\hyperparam_runs"
+        "C:\\Users\\safii\\IdeaProjects\\CI-Colors\\src\\main\\kotlin\\datasets\\hyperparam_runs\\nsgaii"
 
     val nsgaiiHyperparams = listOf(
         HyperparameterConfig(
@@ -927,8 +952,8 @@ fun runNSGAIIHyperoptimizationFast() {
         parameters = nsgaiiHyperparams,
         optimizerName = "NSGAII",
         numSamples = 20,
-        useNelderMead = true,
-        maxEvaluations = 400,
+        useNelderMead = false,
+        maxEvaluations = 10,
         relativeThreshold = 1e-4,
         absoluteThreshold = 1e-4
     )
@@ -942,7 +967,7 @@ fun runSMSEMOAHyperoptimizationFast() {
         "C:\\Users\\safii\\IdeaProjects\\CI-Colors\\src\\main\\kotlin\\datasets\\training--3-colors-random-step.csv"
 
     val tempOutputDir =
-        "C:\\Users\\safii\\IdeaProjects\\CI-Colors\\src\\main\\kotlin\\datasets\\hyperparam_runs"
+        "C:\\Users\\safii\\IdeaProjects\\CI-Colors\\src\\main\\kotlin\\datasets\\hyperparam_runs\\smsemoa"
 
     val smsemoaHyperparams = listOf(
         HyperparameterConfig(
@@ -984,9 +1009,9 @@ fun runSMSEMOAHyperoptimizationFast() {
         tempOutputDir = tempOutputDir,
         parameters = smsemoaHyperparams,
         optimizerName = "SMSEMOA",
-        numSamples = 20,
+        numSamples = 50,
         useNelderMead = true,
-        maxEvaluations = 400,
+        maxEvaluations = 10,
         relativeThreshold = 1e-4,
         absoluteThreshold = 1e-4
     )
@@ -1000,7 +1025,7 @@ fun runSPEA2HyperoptimizationFast() {
         "C:\\Users\\safii\\IdeaProjects\\CI-Colors\\src\\main\\kotlin\\datasets\\training--3-colors-random-step.csv"
 
     val tempOutputDir =
-        "C:\\Users\\safii\\IdeaProjects\\CI-Colors\\src\\main\\kotlin\\datasets\\hyperparam_runs"
+        "C:\\Users\\safii\\IdeaProjects\\CI-Colors\\src\\main\\kotlin\\datasets\\hyperparam_runs\\SPEA2"
 
     val spea2Hyperparams = listOf(
         HyperparameterConfig(
@@ -1050,9 +1075,9 @@ fun runSPEA2HyperoptimizationFast() {
         tempOutputDir = tempOutputDir,
         parameters = spea2Hyperparams,
         optimizerName = "SPEA2",
-        numSamples = 20,
-        useNelderMead = true,
-        maxEvaluations = 2000,        // 5 parameters
+        numSamples = 50,
+        useNelderMead = false,
+        maxEvaluations = 10,        // 5 parameters
         relativeThreshold = 1e-4,
         absoluteThreshold = 1e-4
     )
