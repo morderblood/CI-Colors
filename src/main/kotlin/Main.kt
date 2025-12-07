@@ -107,13 +107,13 @@ fun runAllAlgorithms(
             "checkFeasibleCount" to 10,
             "stopFitness" to 0.001
         ),
-        "NSGAII" to mapOf(
-            "populationSize" to 175,
-            "sbxRate" to 1.0,
-            "sbxDistributionIndex" to 15.0,
-            "pmRate" to 0.1,
-            "pmDistributionIndex" to 20.0
-        ),
+//        "NSGAII" to mapOf(
+//            "populationSize" to 175,
+//            "sbxRate" to 1.0,
+//            "sbxDistributionIndex" to 15.0,
+//            "pmRate" to 0.1,
+//            "pmDistributionIndex" to 20.0
+//        ),
 //        "SPEA2" to mapOf(
 //            "populationSize" to 100,
 //            "archiveSize" to 100,

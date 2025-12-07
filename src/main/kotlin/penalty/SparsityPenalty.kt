@@ -11,11 +11,11 @@ package penalty
  */
 class SparsityPenalty(
     private val threshold: Double = 0.01,
-    private val penaltyPerColor: Double = 1.0
+    private val penaltyPerColor: Double = 25.0
 ) : Penalty {
 
     override fun calculate(weights: DoubleArray): Double {
         val activeCount = weights.count { it > threshold }
-        return activeCount * penaltyPerColor
+        return if (activeCount > 3) penaltyPerColor * activeCount else 0.0
     }
 }

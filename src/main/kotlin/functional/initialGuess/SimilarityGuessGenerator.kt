@@ -24,7 +24,7 @@ class SimilarityGuessGenerator (
 
     private fun generateSimilarityBasedGuess(dimensions: Int, similarIndex: Int): DoubleArray {
         val guess = DoubleArray(dimensions)
-        val similarWeight = 0.5
+        val similarWeight = 0.3
         val baseWeight = (1.0 - similarWeight) / (dimensions - 1)
 
         for (i in guess.indices) {
