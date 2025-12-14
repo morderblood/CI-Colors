@@ -2,8 +2,8 @@ plugins {
     kotlin("jvm") version "2.2.20"
 }
 
-group = "org.example"
-version = "1.0-SNAPSHOT"
+group = "com.github.morderblood"
+version = "1.0.0"
 
 repositories {
     mavenCentral()
